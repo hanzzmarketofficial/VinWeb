@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VincentWebku</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-primary: #3B82F6;
+    --blue-light: #93C5FD;
+    --blue-dark: #1D4ED8;
+    --blue-glow: #60A5FA;
+    --white: #FFFFFF;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-400: #94A3B8;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --glass-bg: rgba(255,255,255,0.12);
+    --glass-border: rgba(255,255,255,0.2);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 40%, #0F2044 100%);
+    min-height: 100vh;
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ===== PARTICLES ===== */
+  #particles {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, var(--blue-light), transparent);
+    opacity: 0; animation: floatParticle linear infinite;
+  }
+
+  @keyframes floatParticle {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.2; }
+    100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+  }
+
+  /* ===== SPLASH SCREEN ===== */
+  #splash {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0F2044 100%);
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #splash.hidden { opacity: 0; visibility: hidden; }
+
+  .splash-logo {
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-align: center;
+    animation: fadeInUp 1s ease forwards;
+    opacity: 0;
+  }
+  .splash-logo span { color: var(--blue-light); }
+
+  .splash-sub {
+    font-size: clamp(0.85rem, 2vw, 1.1rem);
+    color: var(--gray-400);
+    margin-top: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: fadeInUp 1s ease 0.3s forwards;
+    opacity: 0;
+  }
+
+  .splash-line {
+    width: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue-primary), transparent);
+    margin: 2rem auto;
+    animation: expandLine 1s ease 0.6s forwards;
+  }
+
+  #btn-start {
+    visibility: hidden;
+    opacity: 0;
+    padding: 0.85rem 2.8rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue-primary));
+    border: 1px solid var(--blue-glow);
+    border-radius: 50px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(59,130,246,0.4), 0 0 60px rgba(59,130,246,0.15);
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #btn-start.show {
+    visibility: visible;
+    opacity: 1;
+  }
+  #btn-start::before {
+    content: '';
+    position: absolute; top: -50%; left: -60%;
+    width: 40%; height: 200%;
+    background: rgba(255,255,255,0.2);
+    transform: skewX(-20deg);
+    animation: shimmer 2.5s ease infinite;
+  }
+  #btn-start:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 40px rgba(59,130,246,0.6), 0 0 80px rgba(59,130,246,0.25);
+  }
+
+  @keyframes shimmer { 0%,100%{left:-60%} 50%{left:120%} }
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes expandLine { from{width:0} to{width:min(300px,60vw)} }
+
+  /* ===== MAIN APP ===== */
+  #app {
+    display: none; opacity: 0;
+    min-height: 100vh;
+    position: relative; z-index: 1;
+    transition: opacity 0.6s ease;
+  }
+  #app.visible { opacity: 1; }
+
+  /* ===== HEADER ===== */
+  header {
+    position: sticky; top: 0; z-index: 50;
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(15,23,42,0.75);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .logo-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800; font-size: 1.4rem;
+    letter-spacing: 0.04em;
+  }
+  .logo-text span { color: var(--blue-light); }
+
+  /* ===== SPOTIFY ===== */
+  .spotify-wrap {
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .spotify-mini {
+    width: 260px; height: 80px;
+    border-radius: 12px; border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  @media(max-width:640px) {
+    header { flex-wrap: wrap; gap: 0.75rem; padding: 0.75rem 1rem; }
+    .spotify-mini { width: 100%; height: 70px; }
+    .spotify-wrap { width: 100%; }
+  }
+
+  /* ===== TABS ===== */
+  .tabs-section { padding: 2.5rem 1.5rem 0; max-width: 1100px; margin: 0 auto; }
+
+  .tab-bar {
+    display: flex; gap: 0.5rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 0.5rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    flex: 1; min-width: 110px;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none; border-radius: 12px;
+    color: var(--gray-400);
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  }
+  .tab-btn:hover { color: var(--white); background: rgba(255,255,255,0.08); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue-primary));
+    color: var(--white);
+    box-shadow: 0 4px 20px rgba(59,130,246,0.35);
+  }
+
+  .tab-icon { font-size: 1.1rem; }
+
+  /* ===== PANEL ===== */
+  .tab-panel { display: none; animation: panelIn 0.4s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes panelIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ===== GLASS BOX ===== */
+  .glass {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    padding: 1.75rem;
+  }
+
+  /* ===== MARKETPLACE ===== */
+  .section-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem; font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .section-title span { color: var(--blue-light); }
+  .section-sub {
+    color: var(--gray-400); font-size: 0.85rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .product-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
+  }
+  .product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(59,130,246,0.25);
+    border-color: var(--blue-primary);
+  }
+
+  .product-img-wrap {
+    width: 100%; aspect-ratio: 16/10;
+    overflow: hidden;
+    background: rgba(59,130,246,0.1);
+  }
+  .product-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    display: block;
+  }
+  .product-card:hover .product-img-wrap img { transform: scale(1.06); }
+
+  .product-info {
+    padding: 1rem;
+  }
+  .product-name {
+    font-size: 0.82rem; font-weight: 600;
+    color: var(--white);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    min-height: 2.4em;
+  }
+
+  .btn-check {
+    display: block; width: 100%;
+    padding: 0.55rem 0.8rem;
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue-primary));
+    border: none; border-radius: 10px;
+    color: var(--white);
+    font-size: 0.78rem; font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    box-shadow: 0 2px 12px rgba(59,130,246,0.3);
+  }
+  .btn-check:hover { opacity: 0.88; transform: scale(0.98); }
+
+  .market-footer {
+    margin-top: 1.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(59,130,246,0.12);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 12px;
+    font-size: 0.82rem;
+    color: var(--blue-light);
+    text-align: center;
+    font-weight: 500;
+  }
+
+  /* ===== PAYMENT ===== */
+  .payment-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem; font-weight: 700;
+    text-align: center; margin-bottom: 1.75rem;
+  }
+
+  .qris-wrap {
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .qris-label {
+    font-size: 0.75rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gray-400);
+    margin-bottom: 0.75rem; font-weight: 600;
+  }
+  .qris-img {
+    width: min(260px, 80vw);
+    border-radius: 16px;
+    border: 2px solid var(--blue-primary);
+    box-shadow: 0 0 30px rgba(59,130,246,0.2);
+  }
+
+  .payment-methods {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.85rem; margin-bottom: 1.25rem;
+  }
+  .pay-method {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+  }
+  .pay-method .pay-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+  .pay-method .pay-name { font-size: 0.8rem; font-weight: 600; color: var(--blue-light); }
+  .pay-method .pay-num { font-size: 0.75rem; color: var(--gray-400); margin-top: 0.2rem; }
+
+  .pay-note {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--blue-light);
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* ===== SOCIAL MEDIA ===== */
+  .social-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem; font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .social-sub { color: var(--gray-400); font-size: 0.85rem; margin-bottom: 1.5rem; }
+
+  .social-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .social-card {
+    display: flex; align-items: center; gap: 1rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    text-decoration: none; color: var(--white);
+    transition: border-color 0.3s, background 0.3s, transform 0.25s;
+  }
+  .social-card:hover {
+    border-color: var(--blue-primary);
+    background: rgba(59,130,246,0.1);
+    transform: translateY(-3px);
+  }
+  .social-icon-wrap {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; flex-shrink: 0;
+  }
+  .social-info .s-name { font-size: 0.8rem; font-weight: 600; color: var(--blue-light); }
+  .social-info .s-handle { font-size: 0.75rem; color: var(--gray-400); margin-top: 0.15rem; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--gray-400);
+    font-size: 0.78rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 3px; }
+
+  /* ===== MOBILE ===== */
+  @media(max-width:480px) {
+    .tabs-section { padding: 1.25rem 0.75rem 0; }
+    .glass { padding: 1.25rem; }
+    .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.9rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Particles -->
+<div id="particles"></div>
+
+<!-- ===== SPLASH ===== -->
+<div id="splash">
+  <div class="splash-logo">Halo Selamat Datang Di <span>VincentWebku</span></div>
+  <div class="splash-sub">Technology &middot; Marketplace &middot; Digital Services</div>
+  <div class="splash-line"></div>
+  <button id="btn-start" onclick="enterApp()">&#9654; START</button>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+  <header>
+    <div class="logo-text">Vincent<span>Webku</span></div>
+    <div class="spotify-wrap">
+      <iframe class="spotify-mini"
+        src="https://open.spotify.com/embed/track/3ZwqWrRpylU9nfy99qwKdR?utm_source=generator&theme=0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy">
+      </iframe>
+    </div>
+  </header>
+
+  <div class="tabs-section">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('marketplace',this)">
+        <span class="tab-icon">🛒</span> MarketPlace
+      </button>
+      <button class="tab-btn" onclick="switchTab('payment',this)">
+        <span class="tab-icon">💳</span> Payment
+      </button>
+      <button class="tab-btn" onclick="switchTab('social',this)">
+        <span class="tab-icon">🌐</span> Social Media
+      </button>
+    </div>
+
+    <!-- MARKETPLACE -->
+    <div class="tab-panel active glass" id="panel-marketplace">
+      <div class="section-title">Vincent <span>MarketPlace</span></div>
+      <div class="section-sub">Produk digital terpercaya dengan garansi resmi</div>
+
+      <div class="products-grid">
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/NFcc7W2Y/1781549197900.png" alt="Bot Jaga Group" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Sewa Bot Jaga Group</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/LXdK2rTF/1781549123031.png" alt="Desain" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Desain Tugas/Promosi</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/wjPnQSnt/1781548292443.png" alt="Panel Pterodactyl" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Jual Panel Pterodactyl Private & Public</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/Y0bsGV1F/1781547744380.png" alt="Script Website" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Jual Script Website</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/W1DHz5tp/1781547302624.png" alt="Script Bot" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Jual Script Bot WhatsApp & Telegram</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/qRrbm0wn/1781523145086.png" alt="Bot Store" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Sewa Bot Store</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img-wrap">
+            <img src="https://i.postimg.cc/tTr3hHm8/IMG-20260616-022529-000.png" alt="Nokos WhatsApp" loading="lazy">
+          </div>
+          <div class="product-info">
+            <div class="product-name">Jual Nokos WhatsApp All Negara</div>
+            <a href="https://wa.me/6285928360811" target="_blank" class="btn-check">Check Harga 💬</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="market-footer">
+        ✅ Pembelian Produk Di Vincent Market Di Jamin Aman Dan Mendapatkan Garansi
+      </div>
+    </div>
+
+    <!-- PAYMENT -->
+    <div class="tab-panel glass" id="panel-payment">
+      <div class="payment-title">Payment Vincent Market 🏮</div>
+
+      <div class="qris-wrap">
+        <div class="qris-label">⬛ Scan QRIS</div>
+        <img class="qris-img" src="https://i.postimg.cc/P5m1SDRz/20260613-132010.jpg" alt="QRIS Payment">
+      </div>
+
+      <div class="payment-methods">
+        <div class="pay-method">
+          <div class="pay-icon">💚</div>
+          <div class="pay-name">Dana</div>
+          <div class="pay-num">081973753505</div>
+        </div>
+        <div class="pay-method">
+          <div class="pay-icon">🟢</div>
+          <div class="pay-name">GoPay</div>
+          <div class="pay-num">081973753505</div>
+        </div>
+        <div class="pay-method">
+          <div class="pay-icon">💜</div>
+          <div class="pay-name">OVO</div>
+          <div class="pay-num">081973753505</div>
+        </div>
+        <div class="pay-method">
+          <div class="pay-icon">📱</div>
+          <div class="pay-name">WhatsApp</div>
+          <div class="pay-num">+62 859-2836-0811</div>
+        </div>
+      </div>
+
+      <div class="pay-note">
+        📎 Jika Sudah Di Transfer Silahkan Kirim Bukti Transfer Nya Yaa
+      </div>
+    </div>
+
+    <!-- SOCIAL MEDIA -->
+    <div class="tab-panel glass" id="panel-social">
+      <div class="social-title">Kontak & <span style="color:var(--blue-light)">Social Media</span></div>
+      <div class="social-sub">Hubungi kami melalui berbagai platform</div>
+
+      <div class="social-grid">
+        <a class="social-card" href="https://www.tiktok.com/@lightgmaill" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(0,0,0,0.35);">🎵</div>
+          <div class="social-info">
+            <div class="s-name">TikTok</div>
+            <div class="s-handle">@lightgmaill</div>
+          </div>
+        </a>
+
+        <a class="social-card" href="https://t.me/Kontolaneh" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(0,136,204,0.25);">✈️</div>
+          <div class="social-info">
+            <div class="s-name">Telegram</div>
+            <div class="s-handle">@Kontolaneh</div>
+          </div>
+        </a>
+
+        <a class="social-card" href="https://wa.me/6285928360811" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(37,211,102,0.2);">💬</div>
+          <div class="social-info">
+            <div class="s-name">WhatsApp</div>
+            <div class="s-handle">+62 859-2836-0811</div>
+          </div>
+        </a>
+
+        <a class="social-card" href="https://whatsapp.com/channel/0029VbAkJzh5fM0gTsKQnF0H" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(37,211,102,0.2);">📢</div>
+          <div class="social-info">
+            <div class="s-name">Channel WhatsApp</div>
+            <div class="s-handle">Vincent Channel</div>
+          </div>
+        </a>
+
+        <a class="social-card" href="https://t.me/scriptfreeid" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(59,130,246,0.2);">📜</div>
+          <div class="social-info">
+            <div class="s-name">Script Free</div>
+            <div class="s-handle">t.me/scriptfreeid</div>
+          </div>
+        </a>
+
+        <a class="social-card" href="https://chat.whatsapp.com/Fpnj97c7NwV0wU9I5B1Tde" target="_blank">
+          <div class="social-icon-wrap" style="background:rgba(37,211,102,0.2);">🛍️</div>
+          <div class="social-info">
+            <div class="s-name">Group Vincent</div>
+            <div class="s-handle">Vincent Marketplace</div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 VincentWebku &mdash; All Rights Reserved &middot; Made with ❤️ by Vincent
+  </footer>
+</div>
+
+<script>
+  // Particles
+  (function() {
+    const c = document.getElementById('particles');
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const s = Math.random() * 6 + 3;
+      p.style.cssText = `
+        width:${s}px;height:${s}px;
+        left:${Math.random()*100}%;
+        animation-duration:${Math.random()*12+8}s;
+        animation-delay:${Math.random()*8}s;
+      `;
+      c.appendChild(p);
+    }
+  })();
+
+  // Show START button after 2s
+  setTimeout(() => {
+    const btn = document.getElementById('btn-start');
+    btn.classList.add('show');
+  }, 2000);
+
+  // Enter app
+  function enterApp() {
+    const splash = document.getElementById('splash');
+    const app = document.getElementById('app');
+    splash.classList.add('hidden');
+    setTimeout(() => {
+      splash.style.display = 'none';
+      app.style.display = 'block';
+      requestAnimationFrame(() => app.classList.add('visible'));
+    }, 600);
+  }
+
+  // Tab switching
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>
